@@ -1,7 +1,7 @@
 import random
 
 
-def generate_domino():
+def generate_domino() -> list:
     random_set = []
     for i in range(0, 7):
         for j in range(i, 7):
@@ -10,7 +10,7 @@ def generate_domino():
     return random_set
 
 
-def split_domino(random_set: list):
+def split_domino(random_set: list) -> (list, list, list):
     player1 = []
     player2 = []
     for i in range(14):
@@ -25,7 +25,7 @@ def split_domino(random_set: list):
     return random_set, player1, player2
 
 
-def domino_double(lst: list):
+def domino_double(lst: list) -> bool:
     lst_double = []
     for sublist in lst:
         if sublist[0] == sublist[1]:
@@ -36,7 +36,7 @@ def domino_double(lst: list):
         return True
 
 
-def best_starting_piece(lst: list):
+def best_starting_piece(lst: list) -> (int, list):
     best_index = None
     best_piece = [-1, -1]
     for i in range(len(lst)):
@@ -50,7 +50,7 @@ def best_starting_piece(lst: list):
     return best_index, best_piece
 
 
-def player_status(piece1: list, piece2: list):
+def player_status(piece1: list, piece2: list) -> (int, list):
     chosen_piece = []
     turn = 0
     if max(piece1) > max(piece2):
@@ -76,16 +76,36 @@ def print_first_last_three_elements(lst: list):
             print("[{}]".format(", ".join(map(str, sublist))), end="")
 
 
-def make_a_move(lst: list, sublist: list, num: int):
+# A player cannot add a domino to the end of the snake if it doesn't contain the matching number.
+def illegal_move(list1: list, sublist: list, num: int) -> bool:
+    if num > 0:
+        if list1[len(domino_snake) - 1][1] not in sublist:
+            return False
+        else:
+            return True
+    elif num < 0:
+        if list1[0][0] not in sublist:
+            return False
+        else:
+            return True
+
+
+# The orientation of the newly added domino ensures that the matching numbers are neighbors.
+def make_a_move(lst: list, sublist: list, num: int) -> list:
     if num > 0:
         lst.append(sublist)
+        if lst[len(lst) - 2][1] != lst[len(lst) - 1][0]:
+            lst[len(lst) - 1] = list(reversed(lst[len(lst) - 1]))
     elif num < 0:
         lst.insert(0, sublist)
+        if lst[0][1] != lst[1][0]:
+            lst[0] = list(reversed(lst[0]))
 
     return lst
 
 
-def draw_condition(lst: list):
+# The numbers on the ends of the snake are identical and appear within the snake 8 times.
+def draw_condition(lst: list) -> int:
     count = 1
     if lst[0][0] == lst[len(lst) - 1][1]:
         for sublist in lst:
@@ -134,6 +154,7 @@ if __name__ == "__main__":
             print("{}:{}".format(i, player_piece))
         print()
 
+        # End-game condition
         if len(computer_pieces) == 0:
             print("Status: The game is over. The computer won!")
             break
@@ -143,6 +164,10 @@ if __name__ == "__main__":
         elif draw_condition(domino_snake) >= 8:
             print("Status: The game is over. It's a draw!")
             break
+        elif len(stock_pieces) == 0:
+            if (not illegal_move(domino_snake, new_snake, input_num)) and (not illegal_move(domino_snake, new_snake, computer_num)):
+                print("Status: The game is over. It's a draw!")
+                break
 
         if turn_index % 2 == 1:
             invalid_input = False
@@ -159,27 +184,39 @@ if __name__ == "__main__":
                 if abs(input_num) > len(player_pieces):
                     print("Invalid input. Please try again.")
                     continue
-                else:
+
+                if input_num != 0:
+                    new_snake = player_pieces[abs(input_num) - 1]
+                    if not illegal_move(domino_snake, new_snake, input_num):
+                        print("Illegal move. Please try again.")
+                        continue
+                    player_pieces.remove(new_snake)
+                    domino_snake = make_a_move(domino_snake, new_snake, input_num)
                     invalid_input = True
-                    if input_num == 0:
+
+                elif input_num == 0:
+                    if len(stock_pieces) > 0:
                         domino_choice = random.choice(stock_pieces)
                         stock_pieces.remove(domino_choice)
                         player_pieces.append(domino_choice)
+                        invalid_input = True
                     else:
-                        new_snake = player_pieces[abs(input_num) - 1]
-                        player_pieces.remove(new_snake)
-                        domino_snake = make_a_move(domino_snake, new_snake, input_num)
+                        break
 
         elif turn_index % 2 == 0:
             input("Status: {}\n".format(turns[turn_index % 2]))
-            computer_num = random.randint(- len(computer_pieces), len(computer_pieces))
-            if computer_num == 0:
-                domino_choice = random.choice(stock_pieces)
-                stock_pieces.remove(domino_choice)
-                computer_pieces.append(domino_choice)
-            else:
-                new_snake = computer_pieces[abs(computer_num) - 1]
-                computer_pieces.remove(new_snake)
-                domino_snake = make_a_move(domino_snake, new_snake, computer_num)
+            for computer_num in range(- (len(computer_pieces) - 1), len(computer_pieces)):
+                if computer_num != 0:
+                    new_snake = computer_pieces[abs(computer_num) - 1]
+                    if illegal_move(domino_snake, new_snake, computer_num):
+                        computer_pieces.remove(new_snake)
+                        domino_snake = make_a_move(domino_snake, new_snake, computer_num)
+                        break
+                elif computer_num == 0:
+                    if len(stock_pieces) > 0:
+                        domino_choice = random.choice(stock_pieces)
+                        stock_pieces.remove(domino_choice)
+                        computer_pieces.append(domino_choice)
+                    break
 
         turn_index += 1
