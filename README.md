@@ -20,3 +20,14 @@ Status: The game is over. It's a draw!
 - If it's a user's turn, prompt the user for a move and apply it. If the input is invalid (its value is not-integer or it exceeds limitations), request a new input with the following message: Invalid input. Please try again..
 - If it's a computer's turn, prompt the user to press Enter, randomly generate a move, and apply it.
 - Switch turns.
+> Stage 4
+-  When it's a player's turn, the program should:
+- [x] Verify that the move entered by the player is legal (requirement #1).
+If not, request a new input with the following message: Illegal move. Please try again..
+- [x] Place dominoes with the correct orientation (requirement #2).
+> Requirements 
+> 1. A player cannot add a domino to the end of the snake if it doesn't contain the matching number.
+> 2. The orientation of the newly added domino ensures that the matching numbers are neighbors.
+- When it's a computer's turn, the program should:
+- [x] Try random moves until it finds a legal one.
+- [x] Place dominoes with the correct orientation.
