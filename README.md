@@ -31,3 +31,9 @@ If not, request a new input with the following message: Illegal move. Please try
 - When it's a computer's turn, the program should:
 - [x] Try random moves until it finds a legal one.
 - [x] Place dominoes with the correct orientation.
+> Stage 5
+- The AI should use the following algorithm to calculate the score:
+1. Count the number of 0's, 1's, 2's, etc., in your hand, and in the snake.
+2. Each domino in your hand receives a score equal to the sum of appearances of each of its numbers.
+> The AI will now attempt to play the domino with the largest score, trying both the left and the right sides of the snake. If the rules prohibit this move, the AI will move down the score list and try another domino. The AI will skip the turn if it runs out of options.
+- [x] Replace the random move generator with the algorithm described above.
