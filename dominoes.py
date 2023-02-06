@@ -114,6 +114,33 @@ def draw_condition(lst: list) -> int:
     return count
 
 
+# The AI will evaluate each domino in possession, based on the rarity
+def ai_move_generator(ai_pieces: list, snake_pieces: list) -> (int, list):
+    # Count the number of 0's, 1's, 2's, etc.
+    key = [i for i in range(7)]
+    count = dict.fromkeys(key, 0)
+    for piece in ai_pieces + snake_pieces:
+        for key in count.keys():
+            count[key] += piece.count(key)
+
+    score_index = [index for index in range(1, len(ai_pieces) + 1)]
+    score = dict.fromkeys(score_index, 0)
+    # Each domino receives a score equal to the sum of appearances of each of its numbers.
+    for score_index in score.keys():
+        score[score_index] = count[ai_pieces[score_index - 1][0]] + count[ai_pieces[score_index - 1][1]]
+    sorted_score = sorted(score.items(), key=lambda x: x[1])
+    for score_index, score in sorted_score:
+        new_snake = ai_pieces[score_index - 1]
+        if snake_pieces[len(snake_pieces) - 1][1] in new_snake:
+            num = score_index
+        elif snake_pieces[0][0] in new_snake:
+            num = - score_index
+        else:
+            num = 0
+
+    return num, new_snake
+
+
 if __name__ == "__main__":
     while True:
         domino_set = generate_domino()
@@ -205,18 +232,14 @@ if __name__ == "__main__":
 
         elif turn_index % 2 == 0:
             input("Status: {}\n".format(turns[turn_index % 2]))
-            for computer_num in range(- (len(computer_pieces) - 1), len(computer_pieces)):
-                if computer_num != 0:
-                    new_snake = computer_pieces[abs(computer_num) - 1]
-                    if illegal_move(domino_snake, new_snake, computer_num):
-                        computer_pieces.remove(new_snake)
-                        domino_snake = make_a_move(domino_snake, new_snake, computer_num)
-                        break
-                elif computer_num == 0:
-                    if len(stock_pieces) > 0:
-                        domino_choice = random.choice(stock_pieces)
-                        stock_pieces.remove(domino_choice)
-                        computer_pieces.append(domino_choice)
-                    break
+            computer_num, new_snake = ai_move_generator(computer_pieces, domino_snake)
+            if computer_num != 0:
+                computer_pieces.remove(new_snake)
+                domino_snake = make_a_move(domino_snake, new_snake, computer_num)
+            elif computer_num == 0:
+                if len(stock_pieces) > 0:
+                    domino_choice = random.choice(stock_pieces)
+                    stock_pieces.remove(domino_choice)
+                    computer_pieces.append(domino_choice)
 
         turn_index += 1
